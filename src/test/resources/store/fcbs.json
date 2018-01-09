@@ -1,0 +1,26 @@
+[
+  {
+    "name":"/",
+    "iNode":1
+  },
+  {
+    "name":"/dev",
+    "iNode":2
+  },
+  {
+    "name":"/dev/printer",
+    "iNode":3
+  },
+  {
+    "name":"/dev/scanner",
+    "iNode":4
+  },
+  {
+    "name":"/will",
+    "iNode":5
+  },
+  {
+    "name":"/will/hello",
+    "iNode":6
+  }
+]

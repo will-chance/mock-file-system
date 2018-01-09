@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="cn.will.controller.FormatController"
+          prefHeight="200.0" prefWidth="400.0"
+          alignment="CENTER"
+>
+    <padding>
+        <Insets top="20" left="25" bottom="15" right="25"/>
+    </padding>
+    <VBox spacing="5" prefWidth="350">
+        <ProgressBar fx:id="diskSizeBar" prefWidth="350"/>
+        <Button fx:id="addVolumeBtn" text="new volume" onAction="#newVolume"/>
+        <TableView fx:id="allocatedTableView" prefWidth="350" prefHeight="250">
+            <columns>
+                <TableColumn text="name">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="name"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn text="size">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="size"/>
+                    </cellValueFactory>
+                </TableColumn>
+            </columns>
+        </TableView>
+        <HBox spacing="10" alignment="BASELINE_RIGHT">
+             <Button text="Cancel" onAction="#cancel"/>
+            <Button text="OK" onAction="#format"/>
+        </HBox>
+    </VBox>
+</GridPane>

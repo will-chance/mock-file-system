@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="cn.will.controller.VolumeController"
+          vgap="10" hgap="2"
+          prefHeight="140.0" prefWidth="240.0">
+
+    <padding>
+        <Insets top="20" left="10" bottom="10" right="10"/>
+    </padding>
+    <Label text="name"
+            GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="1"
+    />
+    <TextField fx:id="nameField"
+            GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="2"
+    />
+    <Label text="size"
+            GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="1"
+    />
+    <TextField fx:id="sizeField"
+            GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="2"
+    />
+    <Text text="blocks"
+            GridPane.columnIndex="3" GridPane.rowIndex="1" GridPane.columnSpan="1"
+    />
+
+    <HBox spacing="5" alignment="BASELINE_CENTER"
+            GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="2"
+    >
+        <Button text="cancel" prefWidth="50" onAction="#cancel"/>
+        <Button text="ok" prefWidth="42" onAction="#newVolume"/>
+        <Button text="all" prefWidth="42" onAction="#allLeftSize"/>
+    </HBox>
+</GridPane>
