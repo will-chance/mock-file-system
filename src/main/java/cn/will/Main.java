@@ -60,6 +60,10 @@ public class Main extends Application {
         this.user = user;
     }
 
+    public Stage getMainStage() {
+        return mainStage;
+    }
+
     public Stage getFormatStage() {
         return formatStage;
     }

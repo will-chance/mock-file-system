@@ -63,6 +63,14 @@ public class FileControlBlock implements Serializable{
         return create;
     }
 
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
     public void setCreate(long create) {
         this.create = create;
     }

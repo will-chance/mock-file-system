@@ -4,7 +4,10 @@ import cn.will.file.FileAllocationTable;
 import cn.will.file.FileControlBlock;
 import cn.will.file.Memory;
 import cn.will.tree.FileTreeNode;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 
 import java.util.ArrayList;
@@ -45,7 +48,45 @@ public class PropertyController {
     @FXML
     private Label modifiedText;
 
+    @FXML
+    private CheckBox readOnlyCheckBox;
+
     private FileTreeNode fileTreeNode;
+
+    @FXML
+    private void initialize(){
+        initReadOnlyCheckBox();
+    }
+
+    private void initReadOnlyCheckBox(){
+        this.readOnlyCheckBox.selectedProperty().addListener(
+                (observable, oldValue, newValue) ->{
+                    setReadOnly(newValue,fileTreeNode);
+                    ObjectMapper mapper = new ObjectMapper();
+                    try {
+                        System.out.println(mapper.writeValueAsString(fileTreeNode.getFcb()));
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+        );
+
+        Memory.getInstance().updateFileTree();
+        Memory.getInstance().updateFCB();
+    }
+
+    private void setReadOnly(boolean readOnly,FileTreeNode file){
+        file.getFcb().setReadOnly(readOnly);
+        if (file.isDir()){
+            ArrayList<FileTreeNode> children = file.getChildren();
+            for (int i = 0; i < children.size(); i++) {
+                FileTreeNode child = children.get(i);
+                //递归为该目录下的文件/目录设置读写权限
+                setReadOnly(readOnly,child);
+            }
+        }
+    }
 
     public void updateInfo(){
         if (null == fileTreeNode) {
@@ -65,6 +106,8 @@ public class PropertyController {
             modifiedText.setText(getLastModified());
             physicsLocationText.setText("#"+getFirstBlock() + " block");
         }
+        FileControlBlock fcb = fileTreeNode.getFcb();
+        readOnlyCheckBox.setSelected(fcb.isReadOnly());
     }
 
     private String getTypeOfFile(){

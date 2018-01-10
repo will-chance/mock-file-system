@@ -2,7 +2,6 @@ package cn.will.controller;
 
 import cn.will.Main;
 import cn.will.Resources;
-import cn.will.User;
 import cn.will.Volume;
 import cn.will.file.BitMap;
 import cn.will.file.FileAllocationTable;
@@ -21,6 +20,7 @@ import javafx.scene.control.*;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 
 import java.io.File;
 import java.io.IOException;
@@ -180,14 +180,31 @@ public class MainLayoutController {
 
     @FXML
     private void saveFile(){
-        long modified = System.currentTimeMillis();
-        //读取文件内容 == 模拟读取文件内容到内存中
-        String content = this.editArea.getText();
-        //模拟出该文件需要多少个盘块
-        int size = content.length();
         //获取当前正在编辑的文件的FCB
         FileControlBlock currentFile = memory.getCurrentEditFile();
+
+        if (ckPermit(currentFile)){
+            String msg = "This is a read-only file\nIt can not be overwrite.";
+            //弹窗
+            Alert alert = new Alert(Alert.AlertType.ERROR,msg,
+                    new ButtonType("OK",ButtonBar.ButtonData.YES));
+            alert.initOwner(system.getMainStage());
+            alert.initModality(Modality.WINDOW_MODAL);
+            alert.showAndWait();
+            return;
+        }
+
+        //获取修改时间
+        long modified = System.currentTimeMillis();
+
+        //读取文件内容 == 模拟读取文件内容到内存中
+        String content = this.editArea.getText();
+
+        //模拟出该文件需要多少个盘块
+        int size = content.length();
+
         currentFile.setModified(modified);
+
         //获取该文件原来使用的FAT
         List<FileAllocationTable> usedFAT = memory.loadFile(currentFile.getiNode());
         int oldFATSize = usedFAT.size();
@@ -236,9 +253,12 @@ public class MainLayoutController {
                 memory.useFAT(blocks);
             }
         }
-
         //最后保存到外存中
         memory.updateAll();
+    }
+
+    private boolean ckPermit(FileControlBlock fcb){
+        return fcb.isReadOnly();
     }
 
     @FXML
