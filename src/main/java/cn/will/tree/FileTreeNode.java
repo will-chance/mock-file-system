@@ -21,14 +21,18 @@ public class FileTreeNode {
      * @param current
      */
     public FileTreeNode(FileTreeNode parent, String current) {
-        this.parent = parent.getCurrent();
+        if (null != parent){
+            this.parent = parent.getCurrent();
+        }
         this.parentNode = parent;
         this.current = current;
         isDir = false;
     }
 
     public FileTreeNode(FileTreeNode parent,String current,boolean isDir) {
-        this.parent = parent.getCurrent();
+        if (null != parent){
+            this.parent = parent.getCurrent();
+        }
         this.parentNode = parent;
         this.current = current;
         this.isDir = isDir;

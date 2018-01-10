@@ -22,6 +22,8 @@ public class Resources {
 
     public static final String VOLUME_LOCATION = STORE_DIR+"volume.json";
 
+    public static final String USER_LOCATION = STORE_DIR+"user.json";
+
     public static final String IMG_DIR = BASE_DIR + "\\src\\main\\resources\\img\\";
 
     public static ImageView getDirIcon(int size){
@@ -34,4 +36,8 @@ public class Resources {
                 ("img/file" + size + ".png")));
     }
 
+    public static ImageView getVolumeIcon(int size){
+        return new ImageView(new Image(Resources.class.getClassLoader().getResourceAsStream
+                ("img/volume" + size + ".png")));
+    }
 }

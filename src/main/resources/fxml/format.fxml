@@ -23,7 +23,7 @@
                         <PropertyValueFactory property="name"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn text="size">
+                <TableColumn text="size/blocks">
                     <cellValueFactory>
                         <PropertyValueFactory property="size"/>
                     </cellValueFactory>

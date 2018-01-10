@@ -126,4 +126,28 @@ public class BitMap {
         }
         this.usage[id] = '0';
     }
+
+    public void format(){
+        try {
+            FileWriter fileWriter = new FileWriter(storeFile);
+            char[] buf = new char[32];
+
+            for (int i = 0; i < 31; i++) {
+                buf[i] = '0';
+            }
+            //第0盘块默认已用,表示根目录
+            for (int i = 0; i < 32; i++) {
+                if (i == 0) {
+                    buf[0] = '1';
+                } else {
+                    buf[0] = '0';
+                }
+                fileWriter.write(buf);
+                fileWriter.write('\n');
+            }
+            fileWriter.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

@@ -41,6 +41,48 @@ public class FileControlBlock implements Serializable{
      */
     private int iNode;
 
+    /**
+     * 文件创建者
+     */
+    private String owner;
+
+    /**
+     * 所属组
+     */
+    private String group;
+
+    private boolean readOnly;
+
+    private boolean writeOnly;
+
+    private long create;
+
+    private long modified;
+
+    public long getCreate() {
+        return create;
+    }
+
+    public void setCreate(long create) {
+        this.create = create;
+    }
+
+    public long getModified() {
+        return modified;
+    }
+
+    public void setModified(long modified) {
+        this.modified = modified;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
     public String getName() {
         return name;
     }

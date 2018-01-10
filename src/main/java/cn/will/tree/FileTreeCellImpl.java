@@ -1,6 +1,8 @@
 package cn.will.tree;
 
 import cn.will.Resources;
+import cn.will.User;
+import cn.will.controller.PropertyController;
 import cn.will.file.BitMap;
 import cn.will.file.FileAllocationTable;
 import cn.will.file.FileControlBlock;
@@ -8,15 +10,22 @@ import cn.will.file.Memory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +37,8 @@ import java.util.List;
  * Desc:
  */
 public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
+
+    private User currentUser;
 
     private TextArea editArea;
 
@@ -41,7 +52,8 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
 
     private final ContextMenu menu = new ContextMenu();
 
-    public FileTreeCellImpl(TextArea editArea,TilePane explorerPane,TextField pathField) {
+    public FileTreeCellImpl(TextArea editArea,TilePane explorerPane,TextField pathField,User currentUser) {
+        this.currentUser = currentUser;
         this.pathField = pathField;
         this.explorerPane = explorerPane;
         this.editArea = editArea;
@@ -55,11 +67,13 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
         MenuItem openMenu = createOpenMenu();
         MenuItem newDirMenu = createNewDirMenu();
         MenuItem newFileMenu = createNewFileMenu();
+        MenuItem propertyMenu = createPropertyMenu();
 
         menu.getItems().add(openMenu);
         menu.getItems().add(newDirMenu);
         menu.getItems().add(newFileMenu);
         menu.getItems().add(deleteMenu);
+        menu.getItems().add(propertyMenu);
 
     }
 
@@ -85,7 +99,11 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
 
             //创建目录的 FCB
             FileControlBlock fcb = new FileControlBlock(absolutePath,true,-1);
+            fcb.setOwner(currentUser.getUsername());
             memory.getFcbs().add(fcb);
+            long create = System.currentTimeMillis();
+            fcb.setCreate(create);
+            fcb.setModified(create);
             //为该目录设置 FCB
             newDir.setFcb(fcb);
 
@@ -126,6 +144,11 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
 
             //添加fcbs 并更新到外存中
             FileControlBlock fcb = new FileControlBlock(absolutePath,false,spareBlock);
+            //文件所属者
+            fcb.setOwner(currentUser.getUsername());
+            long create = System.currentTimeMillis();
+            fcb.setCreate(create);
+            fcb.setModified(create);
             memory.addFileControlBlock(fcb);
 
             //为该文件设置指向的 FCB
@@ -157,11 +180,12 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
 
     private void openFolder(FileTreeNode item) {
         //清空原有的。重新绘制新的
-        this.explorerPane.getChildren().clear();
+        explorerPane.getChildren().clear();
         //1.open dir --> explore folder
         //获取到该目录的子目录或文件
         ArrayList<FileTreeNode> children = item.getChildren();
         if (null == children || children.isEmpty()){
+            updatePathView(item.getAbsolutePath());
             return;
         }
         ObservableList tiles = FXCollections.observableArrayList();
@@ -178,8 +202,8 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             tiles.add(tile);
         }
         //重新绘制
-        this.explorerPane.getChildren().addAll(tiles);
-        updatePathView(item.getAbsolutePath());
+        explorerPane.getChildren().addAll(tiles);
+        updatePathView(item.getAbsolutePath().replaceFirst("/",""));
     }
 
     private void openFile(FileTreeNode item) {
@@ -198,7 +222,45 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             content = content + "1";
         }
         this.editArea.setText(content);
-        updatePathView(item.getAbsolutePath());
+        updatePathView(item.getAbsolutePath().replaceFirst("/",""));
+    }
+
+    private MenuItem createPropertyMenu(){
+        MenuItem menuItem = new MenuItem("properties");
+        menuItem.setOnAction((ActionEvent t)->{
+            FileTreeNode item = getItem();
+            showPropertyStage(item);
+        });
+        return menuItem;
+    }
+
+    private Stage initPropertyStage(FileTreeNode file){
+        Stage stage = new Stage();
+        Parent root = null;
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(getClass().getClassLoader().getResource("fxml/property.fxml"));
+        try {
+            root = loader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        stage.getIcons().add(new Image("img/filesystem.png"));
+        stage.setTitle(file.getCurrent() + " Properties");
+        stage.setScene(new Scene(root));
+
+        PropertyController controller = loader.getController();
+        controller.setFileTreeNode(file);
+        controller.updateInfo();
+
+        stage.initOwner(null);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.setResizable(false);
+        return stage;
+    }
+
+    public void showPropertyStage(FileTreeNode file){
+        Stage stage = initPropertyStage(file);
+        stage.show();
     }
 
     private void updatePathView(String path){

@@ -1,17 +1,1 @@
-[
-  {
-    "name":"C",
-    "size":512,
-    "start":1
-  },
-  {
-    "name":"D",
-    "size":400,
-    "start":513
-  },
-  {
-    "name":"free",
-    "size":111,
-    "start":914
-  }
-]
+[{"name":"C","size":1023,"start":1}]

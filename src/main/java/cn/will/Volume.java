@@ -14,6 +14,14 @@ public class Volume {
 
     private int start;
 
+    public Volume() {
+    }
+
+    public Volume(String name, int size) {
+        this.name = name;
+        this.size = size;
+    }
+
     public String getName() {
         return name;
     }

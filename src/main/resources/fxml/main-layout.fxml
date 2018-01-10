@@ -12,15 +12,21 @@
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
+                        <MenuItem mnemonicParsing="false" text="New User" onAction="#newUser"/>
+                        <MenuItem mnemonicParsing="false" text="Format Disk" onAction="#reformat"/>
                         <MenuItem mnemonicParsing="false" text="Log Out" onAction="#logOut"/>
-                        <MenuItem mnemonicParsing="false" text="Reformat" onAction="#reformat"/>
                     </items>
+                </Menu>
+            </menus>
+            <menus>
+                <Menu mnemonicParsing="false" text="Help">
+                    <MenuItem mnemonicParsing="false" text="Restore"/>
                 </Menu>
             </menus>
         </MenuBar>
     </top>
     <center>
-        <VBox spacing="7.0" prefWidth="200">
+        <VBox spacing="7.0" prefWidth="200" fx:id="centerPane">
             <padding>
                 <Insets bottom="2.0" top="2.0" left="2.0" right="2.0"/>
             </padding>
@@ -52,12 +58,13 @@
             </padding>
         </ScrollPane>
     </left>
-
     <right>
-        <VBox fx:id="usagePane" prefWidth="210">
-            <padding>
-                <Insets bottom="20.0" left="10.0" right="10.0" top="10.0"/>
-            </padding>
-        </VBox>
+        <ScrollPane fx:id="rightPane">
+            <VBox fx:id="usagePane" prefWidth="210">
+                <padding>
+                    <Insets bottom="20.0" left="10.0" right="10.0" top="10.0"/>
+                </padding>
+            </VBox>
+        </ScrollPane>
     </right>
 </BorderPane>

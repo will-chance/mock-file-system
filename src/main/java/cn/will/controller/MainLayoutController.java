@@ -2,6 +2,7 @@ package cn.will.controller;
 
 import cn.will.Main;
 import cn.will.Resources;
+import cn.will.User;
 import cn.will.Volume;
 import cn.will.file.BitMap;
 import cn.will.file.FileAllocationTable;
@@ -14,8 +15,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.geometry.Insets;
 import javafx.scene.chart.PieChart;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 
@@ -55,11 +58,17 @@ public class MainLayoutController {
     private TextField pathField;
 
     @FXML
+    private ScrollPane rightPane;
+
+    @FXML
     private void initialize(){
         memory = Memory.getInstance();
         initExplorerPane();
         initPreviewTree();
         initVolumeUsage();
+        Insets margin = new Insets(5, 5, 5, 5);
+        BorderPane.setMargin(previewPane,new Insets(2, 0, 2, 2));
+        BorderPane.setMargin(rightPane,new Insets(2, 2, 2, 0));
     }
 
     private void initExplorerPane(){
@@ -71,10 +80,10 @@ public class MainLayoutController {
         TreeItem root = generateFileTreeView(rootFile);
 
         TreeView<FileTreeNode> previewTree = new TreeView<>(root);//以 root 为根节点创建预览树
-        previewTree.setPrefWidth(150);
+        previewTree.setShowRoot(false);
         previewTree.setEditable(true);
         previewTree.setCellFactory((TreeView<FileTreeNode> p)
-                -> new FileTreeCellImpl(editArea,explorerPane,pathField));
+                -> new FileTreeCellImpl(editArea,explorerPane,pathField,system.getUser()));
 
         previewPane.setContent(previewTree);
     }
@@ -88,7 +97,11 @@ public class MainLayoutController {
         TreeItem<FileTreeNode> treeRoot;
 
         if (root.isDir()) {
-            treeRoot = new TreeItem(root,Resources.getDirIcon(16));
+            if (root.getFcb() != null && root.getFcb().getiNode() == -2) {
+                treeRoot = new TreeItem<>(root,Resources.getVolumeIcon(16));
+            } else {
+                treeRoot = new TreeItem(root,Resources.getDirIcon(16));
+            }
             //dir
             if (root.getChildren() != null) {
                 //traverse sub dir
@@ -118,6 +131,7 @@ public class MainLayoutController {
         for (Volume volume:volumes) {
             volumeData.add(new PieChart.Data(volume.getName(),volume.getSize()));
         }
+
         chart.setData(volumeData);
 
         usagePane.getChildren().addAll(chart);
@@ -136,6 +150,9 @@ public class MainLayoutController {
         return volumes;
     }
 
+    /**
+     * 退出登录
+     */
     @FXML
     private void logOut(){
         //退出之前先保存
@@ -144,20 +161,33 @@ public class MainLayoutController {
         system.showLoginLayout();
     }
 
+    /***
+     * 格式化磁盘
+     */
     @FXML
     private void reformat() {
         system.closeMainStage();
         system.showFormatStage();
     }
 
+    /**
+     * 新加用户
+     */
+    @FXML
+    private void newUser(){
+        system.showRegisterStage();
+    }
+
     @FXML
     private void saveFile(){
+        long modified = System.currentTimeMillis();
         //读取文件内容 == 模拟读取文件内容到内存中
         String content = this.editArea.getText();
         //模拟出该文件需要多少个盘块
         int size = content.length();
         //获取当前正在编辑的文件的FCB
         FileControlBlock currentFile = memory.getCurrentEditFile();
+        currentFile.setModified(modified);
         //获取该文件原来使用的FAT
         List<FileAllocationTable> usedFAT = memory.loadFile(currentFile.getiNode());
         int oldFATSize = usedFAT.size();
@@ -224,4 +254,5 @@ public class MainLayoutController {
     public void setSystem(Main system) {
         this.system = system;
     }
+
 }

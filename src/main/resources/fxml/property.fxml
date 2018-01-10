@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<GridPane xmlns="http://javafx.com/javafx"
+          xmlns:fx="http://javafx.com/fxml"
+          fx:controller="cn.will.controller.PropertyController"
+          vgap="10" hgap="10"
+          prefHeight="300.0" prefWidth="260.0">
+    <padding>
+        <Insets top="25" left="15" bottom="20" right="10"/>
+    </padding>
+    <!--<gridLinesVisible>true</gridLinesVisible>-->
+    <!--文件类型-->
+    <Label text="Type of file :" prefWidth="75" minWidth="75"
+        GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.columnSpan="1"
+    />
+    <Label fx:id="typeText"
+          GridPane.columnIndex="1" GridPane.rowIndex="0" GridPane.columnSpan="3"
+    />
+
+    <!--文件名/目录名-->
+    <Label text="Description :" prefWidth="75" minWidth="75"
+           GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.columnSpan="1"
+    />
+    <Label fx:id="descriptionText" prefWidth="160"
+          GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.columnSpan="3"
+    />
+
+    <Separator GridPane.columnIndex="0" GridPane.rowIndex="2"
+               GridPane.columnSpan="4" GridPane.halignment="RIGHT" GridPane.valignment="CENTER"
+          prefWidth="200" minWidth="200"/>
+
+    <!--文件位置,绝对路径-->
+    <Label text="Location :" prefWidth="75" minWidth="75"
+           GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.columnSpan="1"
+    />
+    <Label fx:id="locationText"
+          GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3"
+    />
+    <Label text="Physics Location :" wrapText="true" minWidth="75" prefWidth="75"
+           GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="1"
+    />
+    <Label fx:id="physicsLocationText"
+           GridPane.columnIndex="1" GridPane.rowIndex="4" GridPane.columnSpan="3"
+    />
+
+    <!--占用磁盘空间-->
+    <Label fx:id="sizeLabel" text="Size on disk :" prefWidth="75" minWidth="75"
+           GridPane.columnIndex="0" GridPane.rowIndex="5" GridPane.columnSpan="1"
+    />
+    <Label fx:id="sizeOnDiskText"
+          GridPane.columnIndex="1" GridPane.rowIndex="5" GridPane.columnSpan="3"
+    />
+
+    <Separator GridPane.columnIndex="0" GridPane.rowIndex="6" GridPane.columnSpan="4" GridPane.halignment="CENTER"
+               prefWidth="260" minWidth="260"/>
+
+    <!--创建时间-->
+    <Label text="Create :" prefWidth="75" minWidth="75"
+           GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="1"
+    />
+    <Label fx:id="createText"
+          GridPane.columnIndex="1" GridPane.rowIndex="7" GridPane.columnSpan="3"
+    />
+
+    <!--最后修改时间-->
+    <Label text="Modified :" prefWidth="75" minWidth="75"
+           GridPane.columnIndex="0" GridPane.rowIndex="8" GridPane.columnSpan="1"
+    />
+    <Label fx:id="modifiedText"
+          GridPane.columnIndex="1" GridPane.rowIndex="8" GridPane.columnSpan="3"
+    />
+
+    <Separator GridPane.columnIndex="0" GridPane.rowIndex="9" GridPane.columnSpan="4" GridPane.halignment="CENTER"
+               prefWidth="260" minWidth="260"/>
+    <Label text="Attributes"
+           GridPane.columnIndex="0" GridPane.rowIndex="10" GridPane.columnSpan="1"
+    />
+    <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="10" GridPane.columnSpan="3">
+        <CheckBox text="Read-Only" fx:id="readOnlyCheckBox"/>
+        <!--<CheckBox text="Hidden" />-->
+    </HBox>
+
+</GridPane>

@@ -1,5 +1,7 @@
 package cn.will.file;
 
+import cn.will.Resources;
+import cn.will.User;
 import cn.will.persistence.FileTreeVO;
 import cn.will.tree.FileTreeNode;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -121,9 +123,7 @@ public class Memory {
     public void saveFileTree2Disk(FileTreeNode node){
         //序列化成可写到文件的对象
         FileTreeVO serializableFileTree = serialize2Persistence(node);
-
         //保存
-        ObjectMapper mapper = new ObjectMapper();
         try {
             mapper.writeValue(treeFile,serializableFileTree);
         } catch (IOException e) {
@@ -374,4 +374,42 @@ public class Memory {
     public void setCurrentEditFile(FileControlBlock currentEditFile) {
         this.currentEditFile = currentEditFile;
     }
+
+    public void formatDisk(List<FileControlBlock> fcbs,FileTreeNode root){
+        //1.更新用户文件
+        formatUser();
+        //2.更新位视图 bitmap
+        bitMap.format();
+        //3.更新 FAT
+        formatFAT();
+        //4.更新文件树
+        saveFileTree2Disk(root);
+        //5.更新 FCB
+        saveFCB2External(fcbs);
+    }
+
+    private void formatUser(){
+        File userFile = new File(Resources.USER_LOCATION);
+        List<User> users = new ArrayList<>();
+        users.add(new User("root","123456"));
+        try {
+            mapper.writeValue(userFile,users);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void formatFAT(){
+        List<FileAllocationTable> fat = new ArrayList<>();
+        for (int i = 0; i < 1024; i++) {
+            FileAllocationTable item = new FileAllocationTable(i,-1);
+            fat.add(item);
+        }
+        try {
+            mapper.writeValue(fatFile,fat);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
