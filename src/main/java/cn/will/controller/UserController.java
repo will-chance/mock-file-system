@@ -119,7 +119,7 @@ public class UserController {
 
     private boolean ckPwd(){
         String pwd = rPasswordField.getText();
-        String rePwd = rPasswordField.getText();
+        String rePwd = repeatPwdField.getText();
         if (null == pwd || "".equals(pwd)){
             rTips.setText("password should be no empty");
             return false;

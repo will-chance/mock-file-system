@@ -2,6 +2,7 @@ package cn.will.tree;
 
 import cn.will.Resources;
 import cn.will.User;
+import cn.will.Volume;
 import cn.will.controller.PropertyController;
 import cn.will.file.BitMap;
 import cn.will.file.FileAllocationTable;
@@ -128,10 +129,15 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
                 //todo
                 return;
             }
+            //寻找卷的盘块
+            String volumeName = absolutePath.substring(1, 2);
+            Volume volume = memory.getVolume(volumeName);
 
+            int startAddress = volume.getStart();
+            int endAddress = volume.getSize() + startAddress;
             //查找空闲盘块
             BitMap bitMap = memory.getBitMap();
-            int spareBlock = bitMap.findSpareBlock(bitMap.getUsage());
+            int spareBlock = bitMap.findSpareBlock(bitMap.getUsage(),startAddress,endAddress);
             if (-1 == spareBlock){
                 //没有空闲盘块，磁盘已满
                 return;

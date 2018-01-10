@@ -6,15 +6,12 @@ import cn.will.Volume;
 import cn.will.file.FileControlBlock;
 import cn.will.file.Memory;
 import cn.will.tree.FileTreeNode;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
+import javafx.stage.Modality;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -79,7 +76,13 @@ public class FormatController {
             Volume volume = volumes.get(i);
             FileTreeNode child = new FileTreeNode(root,volume.getName(),true);
             FileControlBlock fcb = new FileControlBlock(volume.getName(),true,-2);
+            long create = System.currentTimeMillis();
+            fcb.setCreate(create);
+            fcb.setModified(create);
+            fcb.setOwner("system");
+
             child.setFcb(fcb);
+
             children.add(child);
             formattedFCB.add(fcb);
         }
@@ -88,19 +91,10 @@ public class FormatController {
         system.closeFormatStage();
     }
 
-    private List<FileControlBlock> formatFCB(List<Volume> volumes){
-        List<FileControlBlock> formattedFCB = new ArrayList<>();
-        for (int i = 0; i < volumes.size(); i++) {
-            Volume volume = volumes.get(i);
-            FileControlBlock fcb = new FileControlBlock(volume.getName(),true,-1);
-        }
-        return formattedFCB;
-    }
-
     private List<Volume> formatVolume(){
         allocatedTableView.sort();
         List<Volume> volumes = allocatedTableView.getItems();
-        int start = 1;
+        int start = 2;
         Volume volume;
         //分配地址
         for (int i = 0; i < volumes.size(); i++) {

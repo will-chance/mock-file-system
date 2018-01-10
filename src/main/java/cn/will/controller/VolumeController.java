@@ -17,7 +17,7 @@ import java.util.List;
 public class VolumeController {
     private static final int MAX_BLOCK = 1024;
 
-    private static int usedBlock = 1;
+    private static int usedBlock = 2;
 
     private Main system;
 

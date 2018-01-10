@@ -7,7 +7,7 @@
           xmlns:fx="http://javafx.com/fxml"
           fx:controller="cn.will.controller.PropertyController"
           vgap="10" hgap="10"
-          prefHeight="300.0" prefWidth="260.0">
+          prefHeight="330.0" prefWidth="260.0">
     <padding>
         <Insets top="25" left="15" bottom="20" right="10"/>
     </padding>
@@ -39,7 +39,7 @@
     <Label fx:id="locationText"
           GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.columnSpan="3"
     />
-    <Label text="Physics Location :" wrapText="true" minWidth="75" prefWidth="75"
+    <Label text="Physics Location :" wrapText="true" minWidth="75" prefWidth="75" minHeight="35"
            GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="1"
     />
     <Label fx:id="physicsLocationText"
@@ -75,10 +75,16 @@
 
     <Separator GridPane.columnIndex="0" GridPane.rowIndex="9" GridPane.columnSpan="4" GridPane.halignment="CENTER"
                prefWidth="260" minWidth="260"/>
-    <Label text="Attributes"
+    <Label text="Owner :"
            GridPane.columnIndex="0" GridPane.rowIndex="10" GridPane.columnSpan="1"
     />
-    <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="10" GridPane.columnSpan="3">
+    <Label fx:id="ownerText"
+           GridPane.columnIndex="1" GridPane.rowIndex="10" GridPane.columnSpan="3"
+    />
+    <Label text="Attributes :"
+           GridPane.columnIndex="0" GridPane.rowIndex="11" GridPane.columnSpan="1"
+    />
+    <HBox spacing="5" GridPane.columnIndex="1" GridPane.rowIndex="11" GridPane.columnSpan="3">
         <CheckBox text="Read-Only" fx:id="readOnlyCheckBox"/>
         <!--<CheckBox text="Hidden" />-->
     </HBox>

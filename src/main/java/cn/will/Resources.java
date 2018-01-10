@@ -20,6 +20,8 @@ public class Resources {
 
     public static final String STORE_DIR = BASE_DIR + "\\src\\main\\resources\\store\\";
 
+    public static final String BACKUP_DIR = BASE_DIR + "\\src\\main\\resources\\backup\\";
+
     public static final String VOLUME_LOCATION = STORE_DIR+"volume.json";
 
     public static final String USER_LOCATION = STORE_DIR+"user.json";

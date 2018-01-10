@@ -2,6 +2,7 @@ package cn.will.controller;
 
 import cn.will.Main;
 import cn.will.Resources;
+import cn.will.User;
 import cn.will.Volume;
 import cn.will.file.BitMap;
 import cn.will.file.FileAllocationTable;
@@ -25,6 +26,7 @@ import javafx.stage.Modality;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -59,6 +61,10 @@ public class MainLayoutController {
 
     @FXML
     private ScrollPane rightPane;
+
+    private List<Volume> volumes;
+
+    private HashMap<String,PieChart> charts;
 
     @FXML
     private void initialize(){
@@ -121,20 +127,29 @@ public class MainLayoutController {
     }
 
     private void initVolumeUsage(){
-        PieChart chart = new PieChart();
-        chart.setTitle("volume usage");
-        chart.setPrefSize(200,200);
+        //加载卷的信息
+        volumes = loadVolumeInfo();
+        memory.setVolumes(volumes);
 
-        List<Volume> volumes = loadVolumeInfo();
-
-        ObservableList volumeData = FXCollections.observableArrayList();
-        for (Volume volume:volumes) {
-            volumeData.add(new PieChart.Data(volume.getName(),volume.getSize()));
+        charts = new HashMap<>();
+        PieChart chart;
+        Volume volume;
+        BitMap bitMap = memory.getBitMap();
+        for (int i = 0; i < volumes.size(); i++) {
+            volume = volumes.get(i);
+            chart = new PieChart();
+            chart.setTitle("Volume "+ volume.getName());
+            chart.setPrefSize(200,200);
+            int usedBlock = bitMap.calcVolumeUsedBlock(volume);
+            int freeBlock = volume.getSize() - usedBlock;
+            ObservableList data = FXCollections.observableArrayList();
+            PieChart.Data usedData = new PieChart.Data("used",usedBlock);
+            PieChart.Data freeData = new PieChart.Data("free",freeBlock);
+            data.addAll(usedData,freeData);
+            chart.setData(data);
+            charts.put(volume.getName(),chart);
+            usagePane.getChildren().addAll(chart);
         }
-
-        chart.setData(volumeData);
-
-        usagePane.getChildren().addAll(chart);
     }
 
     private List<Volume> loadVolumeInfo(){
@@ -148,6 +163,19 @@ public class MainLayoutController {
             e.printStackTrace();
         }
         return volumes;
+    }
+
+    private void updateChart(String volumeName){
+        PieChart chart = charts.get(volumeName);
+        BitMap bitMap = memory.getBitMap();
+        Volume volume = memory.getVolume(volumeName);
+        int usedBlock = bitMap.calcVolumeUsedBlock(volume);
+        int freeBlock = volume.getSize() - usedBlock;
+        ObservableList data = FXCollections.observableArrayList();
+        PieChart.Data usedData = new PieChart.Data("used",usedBlock);
+        PieChart.Data freeData = new PieChart.Data("free",freeBlock);
+        data.addAll(usedData,freeData);
+        chart.setData(data);
     }
 
     /**
@@ -166,6 +194,15 @@ public class MainLayoutController {
      */
     @FXML
     private void reformat() {
+        if (!"root".equals(system.getUser().getUsername())){
+            String msg = "You don't have permission 2 format disk.\nOnly root can format it.";
+            Alert alert = new Alert(Alert.AlertType.INFORMATION,msg,new ButtonType("OK",ButtonBar.ButtonData.YES));
+            alert.setHeaderText("NOT PERMISSION");
+            alert.initOwner(system.getMainStage());
+            alert.initModality(Modality.WINDOW_MODAL);
+            alert.showAndWait();
+            return;
+        }
         system.closeMainStage();
         system.showFormatStage();
     }
@@ -183,6 +220,7 @@ public class MainLayoutController {
         //获取当前正在编辑的文件的FCB
         FileControlBlock currentFile = memory.getCurrentEditFile();
 
+        //检查权限
         if (ckPermit(currentFile)){
             String msg = "This is a read-only file\nIt can not be overwrite.";
             //弹窗
@@ -199,6 +237,8 @@ public class MainLayoutController {
 
         //读取文件内容 == 模拟读取文件内容到内存中
         String content = this.editArea.getText();
+        //获取卷名
+        String volumeName = currentFile.getName().substring(1, 2);
 
         //模拟出该文件需要多少个盘块
         int size = content.length();
@@ -234,9 +274,14 @@ public class MainLayoutController {
             //还需要 difference 个盘块
             int[] blocks = new int[difference];
 
+            //寻找卷的盘块
+            Volume volume = memory.getVolume(volumeName);
+
             int tmpBlock;
+            int startAddress = volume.getStart();
+            int endAddress = volume.getSize() + startAddress;
             for (int i = 0; i < difference; i++) {
-                tmpBlock = bitMap.findSpareBlock(bitMap.getUsage());
+                tmpBlock = bitMap.findSpareBlock(bitMap.getUsage(),startAddress,endAddress);
                 if (tmpBlock == -1) {
                     //缺少块数>=1。磁盘空间不足，文件保存失败
                     enough =false;
@@ -253,12 +298,14 @@ public class MainLayoutController {
                 memory.useFAT(blocks);
             }
         }
+        updateChart(volumeName);
+
         //最后保存到外存中
         memory.updateAll();
     }
 
     private boolean ckPermit(FileControlBlock fcb){
-        return fcb.isReadOnly();
+        return fcb.isReadOnly() && fcb.getOwner().equals(system.getUser().getUsername());
     }
 
     @FXML
@@ -275,4 +322,44 @@ public class MainLayoutController {
         this.system = system;
     }
 
+    @FXML
+    public void backupSystem(){
+        memory.backup();
+        backupUserAndVolume();
+        showBackAlert();
+    }
+
+    private void showBackAlert(){
+        String msg = "backup files located in \"" + Resources.BACKUP_DIR +"\"";
+        Alert alert = new Alert(Alert.AlertType.INFORMATION,msg,new ButtonType("OK",ButtonBar.ButtonData.YES));
+        alert.initOwner(system.getMainStage());
+        alert.initModality(Modality.WINDOW_MODAL);
+        alert.showAndWait();
+    }
+
+    private void backupUserAndVolume(){
+        ObjectMapper mapper = new ObjectMapper();
+        File userFile = new File(Resources.USER_LOCATION);
+        File userBackupFile = new File(Resources.BACKUP_DIR +"user.json");
+        File volumeFile = new File(Resources.VOLUME_LOCATION);
+        File volumeBackupFile = new File(Resources.BACKUP_DIR + "volume.json");
+        try {
+            List<User> users = mapper.readValue(userFile, new TypeReference<List<User>>() {});
+            mapper.writeValue(userBackupFile,users);
+            List<Volume> volumes = mapper.readValue(volumeFile,new TypeReference<List<Volume>>(){});
+            mapper.writeValue(volumeBackupFile,volumes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 恢复系统
+     */
+    @FXML
+    public void restore(){
+        if (system.restore()){
+            system.closeMainStage();
+        }
+    }
 }

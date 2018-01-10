@@ -51,6 +51,9 @@ public class PropertyController {
     @FXML
     private CheckBox readOnlyCheckBox;
 
+    @FXML
+    private Label ownerText;
+
     private FileTreeNode fileTreeNode;
 
     @FXML
@@ -62,16 +65,9 @@ public class PropertyController {
         this.readOnlyCheckBox.selectedProperty().addListener(
                 (observable, oldValue, newValue) ->{
                     setReadOnly(newValue,fileTreeNode);
-                    ObjectMapper mapper = new ObjectMapper();
-                    try {
-                        System.out.println(mapper.writeValueAsString(fileTreeNode.getFcb()));
-                    } catch (JsonProcessingException e) {
-                        e.printStackTrace();
-                    }
                 }
 
         );
-
         Memory.getInstance().updateFileTree();
         Memory.getInstance().updateFCB();
     }
@@ -96,6 +92,7 @@ public class PropertyController {
         descriptionText.setText(getFileDescription());
         locationText.setText(getFileLocation());
         createText.setText(getCreate());
+        ownerText.setText(getOwner());
         if (fileTreeNode.isDir()) {
             sizeLabel.setText("Contains :");
             sizeOnDiskText.setText(getContainFolder(fileTreeNode) + " folders, " + getContainFile(fileTreeNode)
@@ -110,9 +107,16 @@ public class PropertyController {
         readOnlyCheckBox.setSelected(fcb.isReadOnly());
     }
 
+    private String getOwner(){
+        return fileTreeNode.getFcb().getOwner();
+    }
+
     private String getTypeOfFile(){
         String typeOfFile;
-        if (fileTreeNode.isDir()) {
+        int iNode = fileTreeNode.getFcb().getiNode();
+        if (iNode == -2){
+            typeOfFile = "Volume";
+        } else if (iNode == -1){
             typeOfFile = "File Folder";
         } else {
             typeOfFile = "File";

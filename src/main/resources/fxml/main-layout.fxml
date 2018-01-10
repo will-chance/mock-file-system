@@ -3,10 +3,11 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Text?>
 <BorderPane prefHeight="420.0" prefWidth="800.0"
             xmlns="http://javafx.com/javafx/8.0.121"
             fx:controller="cn.will.controller.MainLayoutController"
-            xmlns:fx="http://javafx.com/fxml/1">
+            xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/chart.css">
     <top>
         <MenuBar prefHeight="22.0" prefWidth="800.0" BorderPane.alignment="CENTER">
             <menus>
@@ -20,7 +21,8 @@
             </menus>
             <menus>
                 <Menu mnemonicParsing="false" text="Help">
-                    <MenuItem mnemonicParsing="false" text="Restore"/>
+                    <MenuItem mnemonicParsing="false" text="Backup" onAction="#backupSystem"/>
+                    <MenuItem mnemonicParsing="false" text="Restore" onAction="#restore"/>
                 </Menu>
             </menus>
         </MenuBar>
@@ -32,7 +34,7 @@
             </padding>
             <TextField fx:id="pathField" />
             <ScrollPane prefHeight="230">
-                <TilePane fx:id="explorerPane" vgap="4" hgap="8" prefColumns="7">
+                <TilePane fx:id="explorerPane" styleClass="explorer" vgap="4" hgap="8" prefColumns="7" stylesheets="@../css/">
                     <padding>
                         <Insets top="5.0" bottom="5.0" left="5.0" right="5.0"/>
                     </padding>
@@ -60,10 +62,13 @@
     </left>
     <right>
         <ScrollPane fx:id="rightPane">
-            <VBox fx:id="usagePane" prefWidth="210">
+            <VBox fx:id="usagePane" prefWidth="210" alignment="CENTER" spacing="10">
                 <padding>
                     <Insets bottom="20.0" left="10.0" right="10.0" top="10.0"/>
                 </padding>
+                <Text text="Volume Usage" textAlignment="CENTER"
+                      style="-fx-font-size: 20px;-fx-font-weight: bold"
+                />
             </VBox>
         </ScrollPane>
     </right>

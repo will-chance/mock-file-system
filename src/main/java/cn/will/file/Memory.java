@@ -2,6 +2,7 @@ package cn.will.file;
 
 import cn.will.Resources;
 import cn.will.User;
+import cn.will.Volume;
 import cn.will.persistence.FileTreeVO;
 import cn.will.tree.FileTreeNode;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -64,7 +65,15 @@ public class Memory {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private List<Volume> volumes;
 
+    public List<Volume> getVolumes() {
+        return volumes;
+    }
+
+    public void setVolumes(List<Volume> volumes) {
+        this.volumes = volumes;
+    }
     /****************************文件树*******************************/
     /**
      * 文件树的根节点
@@ -121,11 +130,15 @@ public class Memory {
      * @param node
      */
     public void saveFileTree2Disk(FileTreeNode node){
+        saveFileTree2Disk(treeFile,node);
+    }
+
+    public void saveFileTree2Disk(File file,FileTreeNode node) {
         //序列化成可写到文件的对象
         FileTreeVO serializableFileTree = serialize2Persistence(node);
         //保存
         try {
-            mapper.writeValue(treeFile,serializableFileTree);
+            mapper.writeValue(file,serializableFileTree);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -227,6 +240,10 @@ public class Memory {
         writeList2External(fcbFile,fcbs);
     }
 
+    public void saveFCB2External(File file,List<FileControlBlock> fcbs){
+        writeList2External(file,fcbs);
+    }
+
     public void updateFCB(){
         saveFCB2External(this.fcbs);
     }
@@ -294,8 +311,12 @@ public class Memory {
         }
     }
 
-    protected void saveFAT2External(List<FileAllocationTable> fat){
+    public void saveFAT2External(List<FileAllocationTable> fat){
         writeList2External(fatFile,fat);
+    }
+
+    public void saveFAT2External(File file,List<FileAllocationTable> fat){
+        writeList2External(file,fat);
     }
 
     private void writeList2External(File file,List list){
@@ -360,6 +381,25 @@ public class Memory {
         this.bitMap.update();
     }
 
+    public void backup(){
+        String backupDir = Resources.BACKUP_DIR;
+
+        //备份 FAT
+        File fatBackup = new File(backupDir + "fat.json");
+        saveFAT2External(fatBackup,fat);
+
+        //备份文件树
+        File fileTreeBackup = new File(backupDir + "filesystem.json");
+        saveFileTree2Disk(fileTreeBackup,rootFile);
+
+        File fcbBackup = new File(backupDir +"fcbs.json");
+        saveFCB2External(fcbBackup,fcbs);
+
+        //备份位视图
+        File bitmapBackup = new File(backupDir + "disk");
+        this.bitMap.backup(bitmapBackup);
+    }
+
     /****************************************************/
 
     /**
@@ -410,6 +450,24 @@ public class Memory {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 根据卷名获取卷信息
+     * @param volumeName
+     * @return
+     */
+    public Volume getVolume(String volumeName){
+        Volume volume = null;
+        for (int i =0;i<volumes.size();i++){
+            volume = volumes.get(i);
+            if (!volume.getName().equals(volumeName)){
+                volume = null;
+            }else {
+                break;
+            }
+        }
+        return volume;
     }
 
 }
