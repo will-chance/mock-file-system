@@ -1,5 +1,6 @@
 package cn.will.tree;
 
+import cn.will.Main;
 import cn.will.Resources;
 import cn.will.User;
 import cn.will.Volume;
@@ -8,6 +9,7 @@ import cn.will.file.BitMap;
 import cn.will.file.FileAllocationTable;
 import cn.will.file.FileControlBlock;
 import cn.will.file.Memory;
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -25,6 +27,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,11 +52,14 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
 
     private Memory memory;
 
+    private Main system;
+
     private TextField textField;
 
     private final ContextMenu menu = new ContextMenu();
 
-    public FileTreeCellImpl(TextArea editArea,TilePane explorerPane,TextField pathField,User currentUser) {
+    public FileTreeCellImpl(TextArea editArea,TilePane explorerPane,TextField pathField,User currentUser,Main system) {
+        this.system = system;
         this.currentUser = currentUser;
         this.pathField = pathField;
         this.explorerPane = explorerPane;
@@ -89,7 +95,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
 
             String filename = "NewFolder";
 
-            String absolutePath = item.getAbsolutePath()+"/"+filename;
+            String absolutePath ;
 
             FileTreeNode newDir = new FileTreeNode(item,filename,true);
             item.getChildren().add(newDir);
@@ -99,6 +105,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             getTreeItem().getChildren().add(newDirNode);
 
             //创建目录的 FCB
+            absolutePath = item.getAbsolutePath() + "/" + filename;
             FileControlBlock fcb = new FileControlBlock(absolutePath,true,-1);
             fcb.setOwner(currentUser.getUsername());
             memory.getFcbs().add(fcb);
@@ -110,6 +117,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
 
             memory.updateFCB();
             memory.updateFileTree();
+            focusFileTree(newDirNode);
         });
         return newDirMenu;
     }
@@ -123,12 +131,6 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             FileTreeNode item = getItem();
             String absolutePath = item.getAbsolutePath() + "/" + filename;
 
-            //查重名文件
-            FileControlBlock file = memory.searchFile(absolutePath,false);
-            if (file != null) {
-                //todo
-                return;
-            }
             //寻找卷的盘块
             String volumeName = absolutePath.substring(1, 2);
             Volume volume = memory.getVolume(volumeName);
@@ -149,6 +151,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             item.getChildren().add(newFile);
 
             //添加fcbs 并更新到外存中
+            absolutePath = item.getAbsolutePath() + "/" + filename;
             FileControlBlock fcb = new FileControlBlock(absolutePath,false,spareBlock);
             //文件所属者
             fcb.setOwner(currentUser.getUsername());
@@ -166,9 +169,22 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             TreeItem newFileNode = new TreeItem(newFile,Resources.getFileIcon(16));
             getTreeItem().getChildren().add(newFileNode);
             getTreeItem().setExpanded(true);
-            memory.updateAll();
+            focusFileTree(newFileNode);
+
+
         });
         return newMenu;
+    }
+
+    private void focusFileTree(TreeItem node) {
+        //聚焦到新添加的文件树节点上
+        getTreeView().requestFocus();
+        getTreeView().getSelectionModel().select(node);
+        PauseTransition p = new PauseTransition(Duration.millis(100));
+        p.setOnFinished(event -> {
+            getTreeView().edit(node);
+        });
+        p.play();
     }
 
     private MenuItem createOpenMenu(){
@@ -323,6 +339,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
         textField.setText(getString());
         setGraphic(textField);
         textField.selectAll();
+        textField.requestFocus();
     }
 
     @Override
@@ -340,6 +357,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             setGraphic(null);
         } else {
             if (isEditing()) {
+                textField.requestFocus();
                 if (textField != null) {
                     textField.setText(getString());
                 }
@@ -349,9 +367,6 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
                 setContextMenu(menu);
                 setText(getString());
                 setGraphic(getTreeItem().getGraphic());
-                if (!getTreeItem().isLeaf()){
-                    //非叶子节点,即目录节点可新建文件/目录
-                }
             }
         }
     }
@@ -361,8 +376,37 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
         FileTreeNode item = getItem();
         textField.setOnKeyReleased((KeyEvent t) -> {
             if (t.getCode() == KeyCode.ENTER) {
-                item.setCurrent(textField.getText());
-                //todo 查找当前目录中的重名文件
+                String newName = textField.getText();
+                if (null == newName || "".equals(newName)){
+                    Tooltip tip = new Tooltip("name cannot be empty");
+                    Tooltip.install(textField,tip);
+                    return;
+                }
+                String oldName = item.getCurrent();
+                item.setCurrent(newName);
+                //查找是否冲突命名
+                FileControlBlock sameNameFile;
+                if (item.isDir()){
+                    sameNameFile = memory.searchFile(item.getAbsolutePath(),true);
+                } else {
+                    sameNameFile = memory.searchFile(item.getAbsolutePath(), false);
+                }
+
+
+                if (sameNameFile!=null){
+                    item.setCurrent(oldName);
+                    //表示有重名文件 --> 弹窗
+                    String msg = newName + " already exist in this folder.";
+                    Alert alert = new Alert(Alert.AlertType.INFORMATION,msg,new ButtonType("OK",ButtonBar.ButtonData
+                            .YES));
+                    alert.setHeaderText("Conflict Rename");
+                    alert.initOwner(system.getMainStage());
+                    alert.initModality(Modality.APPLICATION_MODAL);
+                    alert.showAndWait();
+                    return;
+                }
+
+                item.setCurrent(newName);
                 FileControlBlock fcb = item.getFcb();
                 fcb.setName(item.getAbsolutePath());
                 commitEdit(item);

@@ -215,7 +215,8 @@ public class Memory {
     private FileControlBlock searchFile(List<FileControlBlock> fcbs,String filename,boolean isDir){
         FileControlBlock file = null;
         for (FileControlBlock i:fcbs) {
-            if (filename.equals(i.getName())) {
+            String name = i.getName();
+            if (filename.equals(name)) {
                 if (isDir == i.isDir()){
                     file = i;
                 }

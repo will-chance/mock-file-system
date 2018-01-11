@@ -34,7 +34,8 @@
             </padding>
             <TextField fx:id="pathField" />
             <ScrollPane prefHeight="230">
-                <TilePane fx:id="explorerPane" styleClass="explorer" vgap="4" hgap="8" prefColumns="7" stylesheets="@../css/">
+                <TilePane fx:id="explorerPane" styleClass="explorer" vgap="4" hgap="8" prefColumns="7"
+                          stylesheets="@../css/tile.css">
                     <padding>
                         <Insets top="5.0" bottom="5.0" left="5.0" right="5.0"/>
                     </padding>

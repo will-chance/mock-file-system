@@ -1,4 +1,4 @@
 .explorer{
     -fx-pref-tile-width: 50px;
-    -fx-pref-columns: 4;
+    /*-fx-pref-columns: 4;*/
 }

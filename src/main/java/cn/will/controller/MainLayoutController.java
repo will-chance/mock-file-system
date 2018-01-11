@@ -72,7 +72,6 @@ public class MainLayoutController {
         initExplorerPane();
         initPreviewTree();
         initVolumeUsage();
-        Insets margin = new Insets(5, 5, 5, 5);
         BorderPane.setMargin(previewPane,new Insets(2, 0, 2, 2));
         BorderPane.setMargin(rightPane,new Insets(2, 2, 2, 0));
     }
@@ -89,7 +88,7 @@ public class MainLayoutController {
         previewTree.setShowRoot(false);
         previewTree.setEditable(true);
         previewTree.setCellFactory((TreeView<FileTreeNode> p)
-                -> new FileTreeCellImpl(editArea,explorerPane,pathField,system.getUser()));
+                -> new FileTreeCellImpl(editArea,explorerPane,pathField,system.getUser(),system));
 
         previewPane.setContent(previewTree);
     }
