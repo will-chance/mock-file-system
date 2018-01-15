@@ -2,3 +2,58 @@
     -fx-pref-tile-width: 50px;
     /*-fx-pref-columns: 4;*/
 }
+.file-cell:hover{
+    -fx-background-color: #c6c6c6;
+}
+
+.scroll-bar:vertical{
+    -fx-background-color:transparent;
+    -fx-pref-width: 6;
+}
+.scroll-bar:horizontal{
+    -fx-background-color:transparent;
+    -fx-pref-width: 6;
+}
+.scroll-bar .track{
+    -fx-background-color: transparent;
+}
+.scroll-bar .thumb {
+    -fx-background-color: rgb(210, 210, 210);
+    -fx-background-insets: 0, 0, 0;
+    -fx-background-radius: 3em;
+}
+/*箭头不可见*/
+.scroll-bar:horizontal .increment-button ,
+.scroll-bar:horizontal .decrement-button,
+.scroll-bar:vertical .increment-button ,
+.scroll-bar:vertical .decrement-button {
+    -fx-pref-width: 0;
+    -fx-pref-height: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+}
+.scroll-bar:horizontal .increment-arrow,
+.scroll-bar:horizontal .decrement-arrow,
+.scroll-bar:vertical .increment-arrow,
+.scroll-bar:vertical .decrement-arrow{
+    -fx-shape: " ";
+}
+.scroll-pane:focused{
+    -fx-focus-color:-fx-outer-border;
+    -fx-background-insets: 0, 0, 1, 0;
+}
+.tile-pane{
+    -fx-focus-color:-fx-outer-border;
+    -fx-background-insets: 0, 0, 1, 0;
+}
+.tree-view{
+    -fx-focus-color:-fx-outer-border;
+    -fx-background-insets: 0, 0, 1, 0;
+}
+.tooltip{
+    -fx-background-color: transparent;
+    -fx-fill: black;
+    -fx-text-fill: black;
+    -fx-font-size: 15;
+    -fx-font-weight: lighter;
+}

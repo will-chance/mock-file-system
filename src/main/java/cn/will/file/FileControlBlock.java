@@ -122,11 +122,13 @@ public class FileControlBlock implements Serializable{
         FileControlBlock that = (FileControlBlock) o;
         return isDir == that.isDir &&
                 iNode == that.iNode &&
+                create == that.create &&
                 Objects.equals(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, isDir, iNode);
+
+        return Objects.hash(name, isDir, iNode, create);
     }
 }

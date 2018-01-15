@@ -4,10 +4,16 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Text?>
+<?import java.net.URL?>
+<?import javafx.scene.chart.PieChart?>
 <BorderPane prefHeight="420.0" prefWidth="800.0"
             xmlns="http://javafx.com/javafx/8.0.121"
             fx:controller="cn.will.controller.MainLayoutController"
-            xmlns:fx="http://javafx.com/fxml/1" stylesheets="@../css/chart.css">
+            xmlns:fx="http://javafx.com/fxml/1">
+    <stylesheets>
+        <URL value="@../css/tile.css"/>
+        <URL value="@../css/chart.css"/>
+    </stylesheets>
     <top>
         <MenuBar prefHeight="22.0" prefWidth="800.0" BorderPane.alignment="CENTER">
             <menus>
@@ -56,9 +62,6 @@
     </center>
     <left>
         <ScrollPane fx:id="previewPane" prefWidth="170">
-            <padding>
-                <Insets bottom="2.0" left="2.0" right="2.0" top="2.0"/>
-            </padding>
         </ScrollPane>
     </left>
     <right>

@@ -4,6 +4,7 @@ import cn.will.Main;
 import cn.will.Resources;
 import cn.will.User;
 import cn.will.Volume;
+import cn.will.controller.MainLayoutController;
 import cn.will.controller.PropertyController;
 import cn.will.file.BitMap;
 import cn.will.file.FileAllocationTable;
@@ -22,9 +23,9 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
@@ -108,7 +109,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             absolutePath = item.getAbsolutePath() + "/" + filename;
             FileControlBlock fcb = new FileControlBlock(absolutePath,true,-1);
             fcb.setOwner(currentUser.getUsername());
-            memory.getFcbs().add(fcb);
+//            memory.addFileControlBlock(fcb); todo check
             long create = System.currentTimeMillis();
             fcb.setCreate(create);
             fcb.setModified(create);
@@ -118,6 +119,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             memory.updateFCB();
             memory.updateFileTree();
             focusFileTree(newDirNode);
+            openFolder(item);
         });
         return newDirMenu;
     }
@@ -158,7 +160,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             long create = System.currentTimeMillis();
             fcb.setCreate(create);
             fcb.setModified(create);
-            memory.addFileControlBlock(fcb);
+//            memory.addFileControlBlock(fcb); todo check
 
             //为该文件设置指向的 FCB
             newFile.setFcb(fcb);
@@ -170,12 +172,15 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             getTreeItem().getChildren().add(newFileNode);
             getTreeItem().setExpanded(true);
             focusFileTree(newFileNode);
-
-
+            openFolder(item);
         });
         return newMenu;
     }
 
+    /**
+     * 聚焦到新添加到的文件中
+     * @param node
+     */
     private void focusFileTree(TreeItem node) {
         //聚焦到新添加的文件树节点上
         getTreeView().requestFocus();
@@ -219,8 +224,26 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             } else {
                 icon = Resources.getFileIcon(48);
             }
-            VBox tile = new VBox(icon,new Text(child.getCurrent()));
+            Label filename = new Label(child.getCurrent());
+            filename.setMaxWidth(50);
+            VBox tile = new VBox(icon,filename);
+            Tooltip tip = new Tooltip(child.getCurrent());
+            Tooltip.install(tile,tip);
+            tile.getStyleClass().add("file-cell");
             tile.setAlignment(Pos.CENTER);
+            tile.setOnMouseClicked(event -> {
+                MouseButton button = event.getButton();
+                if (button.compareTo(MouseButton.PRIMARY) ==0){
+                    int clickCount = event.getClickCount();
+                    if (clickCount == 2){
+                        if (child.isDir()){
+                            openFolder(child);
+                        }else {
+                            openFile(child);
+                        }
+                    }
+                }
+            });
             tiles.add(tile);
         }
         //重新绘制
@@ -256,6 +279,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
         return menuItem;
     }
 
+    //初始化属性窗口
     private Stage initPropertyStage(FileTreeNode file){
         Stage stage = new Stage();
         Parent root = null;
@@ -280,6 +304,7 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
         return stage;
     }
 
+    //打开属性窗口
     public void showPropertyStage(FileTreeNode file){
         Stage stage = initPropertyStage(file);
         stage.show();
@@ -303,6 +328,8 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
     }
 
     private void deleteFile(FileTreeNode file){
+
+
         if (file.isDir() && file.getChildren() != null){
             //该目录下有目录/文件，递归删除子目录/子文件
             ArrayList<FileTreeNode> children = file.getChildren();
@@ -320,6 +347,8 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             }
             //释放对应的 FAT 表项
             memory.freeFAT(fileFAT);
+            String volumeName = file.getFcb().getName().substring(1, 2);
+            MainLayoutController.updateChart(volumeName);
         }
         //删除对应的 FCB
         memory.getFcbs().remove(file.getFcb());
@@ -375,14 +404,40 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
         textField = new TextField(getString());
         FileTreeNode item = getItem();
         textField.setOnKeyReleased((KeyEvent t) -> {
-            if (t.getCode() == KeyCode.ENTER) {
+
+            //取消编辑
+            if (t.getCode() == KeyCode.ESCAPE) {
+                cancelEdit();
+                return;
+            }
+            if (t.getCode() != KeyCode.ENTER){
+                return;
+            }
+
+                //获取新的文件名并做空判断处理
                 String newName = textField.getText();
                 if (null == newName || "".equals(newName)){
                     Tooltip tip = new Tooltip("name cannot be empty");
                     Tooltip.install(textField,tip);
                     return;
                 }
+
+                //获取旧的文件名做缓存
                 String oldName = item.getCurrent();
+
+                //获取文件fcb
+                FileControlBlock fcb = item.getFcb();
+                //通过fcbs是否包含该fcb判断是否是新文件
+                boolean isNew = !memory.getFcbs().contains(fcb);
+
+                if (newName.equals(oldName) && !isNew){
+//                    文件名没变万而且 不是新文件，直接返回
+                    cancelEdit();
+                    return;
+                }
+
+
+                //设置新的文件名
                 item.setCurrent(newName);
                 //查找是否冲突命名
                 FileControlBlock sameNameFile;
@@ -393,28 +448,48 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
                 }
 
 
+
+            //文件名冲突 提示弹窗
                 if (sameNameFile!=null){
-                    item.setCurrent(oldName);
-                    //表示有重名文件 --> 弹窗
-                    String msg = newName + " already exist in this folder.";
-                    Alert alert = new Alert(Alert.AlertType.INFORMATION,msg,new ButtonType("OK",ButtonBar.ButtonData
-                            .YES));
-                    alert.setHeaderText("Conflict Rename");
-                    alert.initOwner(system.getMainStage());
-                    alert.initModality(Modality.APPLICATION_MODAL);
-                    alert.showAndWait();
+                    showConflictRenameAlert(item, newName, oldName);
                     return;
                 }
 
-                item.setCurrent(newName);
-                FileControlBlock fcb = item.getFcb();
+                //不冲突
+
+
+                //更新fcb信息
                 fcb.setName(item.getAbsolutePath());
                 commitEdit(item);
+
+                //表示是新插入的文件。需要添加fcb
+                if (isNew){
+                    memory.addFileControlBlock(fcb);
+                }
+
+                //写回内存 同步信息
                 memory.updateAll();
-            } else if (t.getCode() == KeyCode.ESCAPE) {
-                cancelEdit();
+
+            //同步更新面板
+            FileTreeNode parent = item.getParentNode();
+            if (parent!=null){
+                openFolder(parent);
             }
+
         });
+    }
+
+    //显示文件命名冲突弹窗
+    private void showConflictRenameAlert(FileTreeNode item, String newName, String oldName) {
+        item.setCurrent(oldName);
+        //表示有重名文件 --> 弹窗
+        String msg = newName + " already exist in this folder.";
+        Alert alert = new Alert(Alert.AlertType.INFORMATION,msg,new ButtonType("OK", ButtonBar.ButtonData
+                .YES));
+        alert.setHeaderText("Conflict Rename");
+        alert.initOwner(system.getMainStage());
+        alert.initModality(Modality.APPLICATION_MODAL);
+        alert.showAndWait();
     }
 
     private String getString() {

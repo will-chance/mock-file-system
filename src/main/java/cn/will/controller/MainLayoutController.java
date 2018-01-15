@@ -40,7 +40,7 @@ public class MainLayoutController {
 
     private Main system;
 
-    private Memory memory;
+    private static Memory memory;
 
     private FileTreeNode rootFile;
 
@@ -64,7 +64,7 @@ public class MainLayoutController {
 
     private List<Volume> volumes;
 
-    private HashMap<String,PieChart> charts;
+    private static HashMap<String,PieChart> charts;
 
     @FXML
     private void initialize(){
@@ -164,7 +164,7 @@ public class MainLayoutController {
         return volumes;
     }
 
-    private void updateChart(String volumeName){
+    public static void updateChart(String volumeName){
         PieChart chart = charts.get(volumeName);
         BitMap bitMap = memory.getBitMap();
         Volume volume = memory.getVolume(volumeName);
@@ -214,6 +214,9 @@ public class MainLayoutController {
         system.showRegisterStage();
     }
 
+    /**
+     * 保存文件执行时的操作
+     */
     @FXML
     private void saveFile(){
         //获取当前正在编辑的文件的FCB
@@ -298,7 +301,6 @@ public class MainLayoutController {
             }
         }
         updateChart(volumeName);
-
         //最后保存到外存中
         memory.updateAll();
     }
