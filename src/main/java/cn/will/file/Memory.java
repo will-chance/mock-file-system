@@ -67,10 +67,6 @@ public class Memory {
 
     private List<Volume> volumes;
 
-    public List<Volume> getVolumes() {
-        return volumes;
-    }
-
     public void setVolumes(List<Volume> volumes) {
         this.volumes = volumes;
     }
@@ -126,7 +122,6 @@ public class Memory {
 
     /**
      * 将文件树保存到外存中.
-     * todo 自动保存
      * @param node
      */
     public void saveFileTree2Disk(FileTreeNode node){
@@ -249,10 +244,6 @@ public class Memory {
         saveFCB2External(this.fcbs);
     }
 
-    public void updateFCB(List<FileControlBlock> fcbs){
-        saveFCB2External(fcbs);
-    }
-
     /*************************FAT****************************/
 
     /**
@@ -336,14 +327,6 @@ public class Memory {
                 e.printStackTrace();
             }
         }
-    }
-
-    public void updateFAT(){
-        saveFAT2External(this.fat);
-    }
-
-    public void updateFAT(List<FileAllocationTable> fat) {
-        saveFAT2External(fat);
     }
 
     /**

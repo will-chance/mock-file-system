@@ -109,7 +109,6 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
             absolutePath = item.getAbsolutePath() + "/" + filename;
             FileControlBlock fcb = new FileControlBlock(absolutePath,true,-1);
             fcb.setOwner(currentUser.getUsername());
-//            memory.addFileControlBlock(fcb); todo check
             long create = System.currentTimeMillis();
             fcb.setCreate(create);
             fcb.setModified(create);
@@ -319,17 +318,19 @@ public class FileTreeCellImpl extends TreeCell<FileTreeNode> {
         MenuItem deleteMenu = new MenuItem("delete");
         deleteMenu.setOnAction((ActionEvent t) ->{
             TreeItem<FileTreeNode> item = getTreeView().getSelectionModel().getSelectedItem();
+            FileTreeNode parent = item.getParent().getValue();
             //从预览视图中删除
             item.getParent().getChildren().remove(item);
             //真正的删除，并保存到外存中
             deleteFile(item.getValue());
+            if (parent != null){
+                openFolder(parent);
+            }
         });
         return deleteMenu;
     }
 
     private void deleteFile(FileTreeNode file){
-
-
         if (file.isDir() && file.getChildren() != null){
             //该目录下有目录/文件，递归删除子目录/子文件
             ArrayList<FileTreeNode> children = file.getChildren();

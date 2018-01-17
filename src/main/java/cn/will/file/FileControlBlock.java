@@ -33,6 +33,9 @@ public class FileControlBlock implements Serializable{
      */
     private String name;
 
+    /**
+     * 是否是目录
+     */
     private boolean isDir;
 
     /**
@@ -51,12 +54,21 @@ public class FileControlBlock implements Serializable{
      */
     private String group;
 
+    /**
+     * 读写控制位
+     */
     private boolean readOnly;
 
     private boolean writeOnly;
 
+    /**
+     * 创建时间
+     */
     private long create;
 
+    /**
+     * 最后修改时间
+     */
     private long modified;
 
     public long getCreate() {
